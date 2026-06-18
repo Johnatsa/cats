@@ -53,6 +53,10 @@ def run_fuzzer(initial_list):
             #Got a race condition 
             #Save it somewhere
             #either break or continue to some depth
+        if result.returncode = 4243:
+            #Got a deadlock
+            #Save it somewhere
+            #either break or continue to some depth
 
         current_distance = get_distance()
 
