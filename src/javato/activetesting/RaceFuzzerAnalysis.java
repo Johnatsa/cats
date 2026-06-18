@@ -11,6 +11,10 @@ import javato.activetesting.activechecker.ActiveChecker;
 import javato.activetesting.HybridRaceTracker;
 import javato.activetesting.analysis.Observer;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentHashMap;
+import java.io.FileWriter;
+
 /**
  * Copyright (c) 2007-2008,
  * Koushik Sen    <ksen@cs.berkeley.edu>
@@ -48,12 +52,8 @@ public class RaceFuzzerAnalysis extends CheckerAnalysisImpl {
 
     public void initialize() {
         if (Parameters.errorId >= 0) {
-//    Your code goes here.
-//    In my implementation I had the following code:
             LinkedHashSet<CommutativePair> seenRaces = HybridRaceTracker.getRacesFromFile();
             racePair = (CommutativePair) (seenRaces.toArray())[Parameters.errorId - 1];
-            //System.out.println("=-= seenRaces: " + seenRaces
-            //    + " racePair: " + racePair);
         }
     }
 
@@ -98,24 +98,16 @@ public class RaceFuzzerAnalysis extends CheckerAnalysisImpl {
     }
 
     public void readBefore(Integer iid, Integer thread, Long memory) {
-//    Your code goes here.
-//    In my implementation I had the following code:
         if (racePair != null && racePair.contains(iid)) {
-            synchronized (ActiveChecker.lock) {
-                (new RaceChecker(memory, false, iid)).check();
-            }
-            ActiveChecker.blockIfRequired();
+            ActiveChecker.fuzzDelay(iid);
+            RaceOracle.checkCollision(memory, iid);
         }
     }
 
     public void writeBefore(Integer iid, Integer thread, Long memory) {
-//    Your code goes here.
-//    In my implementation I had the following code:
         if (racePair != null && racePair.contains(iid)) {
-            synchronized (ActiveChecker.lock) {
-                (new RaceChecker(memory, true, iid)).check();
-            }
-            ActiveChecker.blockIfRequired();
+            ActiveChecker.fuzzDelay(iid);
+            RaceOracle.checkCollision(memory, iid);    
         }
     }
 
@@ -124,33 +116,40 @@ public class RaceFuzzerAnalysis extends CheckerAnalysisImpl {
     }
 }
 
-class RaceChecker extends ActiveChecker {
-    public Long memory;
-    public boolean isWrite;
-    public Integer iid;
-    RaceChecker(Long memory, boolean isWrite, Integer iid) {
-      this.memory = memory;
-      this.isWrite = isWrite;
-      this.iid = iid;
-    }
-    public void check(Collection<ActiveChecker> checkers) {
-      for (ActiveChecker ac : checkers) {
-        if (ac instanceof RaceChecker) {
-          RaceChecker rc = (RaceChecker) ac;
-          if (this.isRace(rc)) {
-            CommutativePair thisRace = new CommutativePair(this.iid, rc.iid);
-            System.out.println("Found real race between " + thisRace);
-            if (this.rand.nextBoolean()) {
-              this.block(0);
-              rc.unblock(0);
-            }
-            return;
-          }
+
+public class RaceOracle{
+    //How many threads are in a specific area right now
+    static ConcurrentHashMap<Long, Set<Long>> activeAccesses = new ConcurrentHashMap<>();
+
+    //The last time each address was touched
+    static ConcurrentHashMap<Long, Long> lastAccessTime = new ConcurrentHashMap<>();
+
+    public static void checkCollision(Long memoryAddress, Integer iid){
+        long currentTime = System.nanoTime();
+
+        activeAccesses.putIfAbsent(memoryAddress, ConcurrentHashMap.newKeySet());
+        Set<Long> threadsPresent = activeAccesses.get(memoryAddress);
+
+        long myThreadId = Thread.currentThread().getId(); 
+        threadsPresent.add(myThreadId);
+
+        if(threadsPresent.size() > 1){
+            //Win! Found a data race
+            System.exit(4242); //Code for our fuzzer to know that it exited from a date race
         }
-      }
-      block(0);
+
+        //Calculate how far apart were the thread accesses to a specific memory address in order to guide the mutations
+        Long previousTime = lastAccessTime.put(memoryAddress, currentTime); //Returns the previous value
+        if (previousTime != null){
+            long distance = Math.abs(currentTime - previousTime);
+            writeFeedback(distance);
+        }
+
+        threadsPresent.remove(myThreadId);
     }
-    public boolean isRace(RaceChecker rhs) {
-      return this.memory.equals(rhs.memory) && (this.isWrite || rhs.isWrite);
+
+    public static synchronized void writeFeedback(long distance){
+        FileWriter fw = new FileWriter("/tmp/fuzzer_feedback.txt");
+        fw.write(String.valueOf(distance));
     }
 }
