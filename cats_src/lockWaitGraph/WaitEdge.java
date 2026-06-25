@@ -1,5 +1,32 @@
 package cats_src.lockWaitGraph;
 
-public class WaitEdge {
-    
+public class WaitEdge extends Edge {
+    private int cond_after;
+
+    private CallType type;
+
+    public WaitEdge(int tid, Node end, int cond_after, CallType type) {
+        super(tid, end);
+        this.type = type;
+        this.cond_after = cond_after;
+    }
+
+    public WaitEdge(int tid, Node end, CallType type) {
+        super(tid, end);
+        this.type = type;
+        this.cond_after = -1;
+    }
+
+    public int getCondValueAfterEdge() {
+        return cond_after;
+    }
+
+    public CallType getEdgeType() {
+        return type;
+    }
+}
+
+enum CallType {
+    WAIT,
+    NOTIFY
 }

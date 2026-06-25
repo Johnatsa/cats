@@ -26,4 +26,8 @@ public class LockWaitGraph {
         
         graph.get(n).add(e);
     }
+
+    public List<List<Edge>> getEdgeCycleList() {
+        return null;
+    }
 }
