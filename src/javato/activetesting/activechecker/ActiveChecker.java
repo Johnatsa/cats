@@ -38,6 +38,7 @@ public class ActiveChecker {
     final public static void fuzzDelay(Integer iid){
         Integer delay = fuzzerTape.get(iid);
         
+        // Athena: What if delay is null
         try{
             Thread.sleep(delay);
         } catch(Exception e){
