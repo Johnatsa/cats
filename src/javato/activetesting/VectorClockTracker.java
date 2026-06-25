@@ -26,7 +26,7 @@ class VectorClock {
   public boolean lessThanEqual(VectorClock rhs) {
     for (Integer i : this.vc.keySet()) {
       Integer ri = rhs.vc.get(i);
-      if (ri == null) ri = new Integer(0);
+      if (ri == null) ri = 0;
       Integer li = this.vc.get(i);
       if (li > ri) return false;
     }
@@ -36,7 +36,7 @@ class VectorClock {
   public void increment(Integer thread) {
     Integer time = this.vc.get(thread);
     if (time == null) {
-      time = new Integer(0);
+      time = 0;
     }
     this.vc.put(thread, time+1);
   }

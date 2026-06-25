@@ -13,9 +13,9 @@ class CommutativePair implements java.io.Serializable {
 
   CommutativePair(Integer x, Integer y) {
     if (x < y) {
-      this.x = new Integer(x); this.y = new Integer(y);
+      this.x = x; this.y = y;
     } else {
-      this.y = new Integer(x); this.x = new Integer(y);
+      this.y = x; this.x = y;
     }
   }
 
@@ -47,9 +47,9 @@ class Event {
   public LockSet ls;
 
   Event(Integer iid, Integer thread, Long memory, boolean isWrite, VectorClock vClock, LockSet ls) {
-    this.iid = new Integer(iid);
-    this.thread = new Integer(thread);
-    this.memory = new Long(memory);
+    this.iid = iid;
+    this.thread = thread;
+    this.memory = memory;
     this.isWrite = isWrite;
     this.vClock = vClock.clone();
     this.ls = new LockSet(ls);
@@ -127,18 +127,22 @@ class HybridRaceTracker {
       java.io.FileOutputStream fos = new java.io.FileOutputStream("error.log");
       java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(fos);
       oos.writeObject(races);
+      oos.close();
     } catch (java.io.IOException e) {
       System.out.println("Failed to write to file: " + e);
     }
     return races.size();
   }
 
+
+  @SuppressWarnings("unchecked")
   public static LinkedHashSet<CommutativePair> getRacesFromFile() {
     LinkedHashSet<CommutativePair> savedRaces = null;
     try {
       java.io.FileInputStream fis = new java.io.FileInputStream("error.log");
       java.io.ObjectInputStream ois = new java.io.ObjectInputStream(fis);
       savedRaces = (LinkedHashSet<CommutativePair>) ois.readObject();
+      ois.close();
     } catch (java.io.IOException e) {
       System.out.println("Failed to read object from file: " + e);
     } catch (java.lang.ClassNotFoundException e) {

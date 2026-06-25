@@ -1,18 +1,11 @@
 package javato.activetesting;
 
-import javato.activetesting.activechecker.ActiveChecker;
 import javato.activetesting.analysis.AnalysisImpl;
 import javato.activetesting.common.Parameters;
 
 import javato.activetesting.lockset.LockSet;
 import javato.activetesting.lockset.LockSetTracker;
 import javato.activetesting.reentrant.IgnoreRentrantLock;
-import javato.activetesting.HybridRaceTracker;
-import javato.activetesting.VectorClockTracker;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
 
 
 /**
@@ -55,8 +48,10 @@ public class HybridAnalysis extends AnalysisImpl {
     private IgnoreRentrantLock ignoreRentrantLock;
     private HybridRaceTracker eb;
 
+    private static final Object myLock = new Object();
+
     public void initialize() {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             vcTracker = new VectorClockTracker();
@@ -67,17 +62,17 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void lockBefore(Integer iid, Integer thread, Integer lock) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             if (ignoreRentrantLock.lockBefore(thread, lock)) {
-                boolean isDeadlock = lsTracker.lockBefore(iid, thread, lock);
+                //boolean isDeadlock = lsTracker.lockBefore(iid, thread, lock);
             }
         }
     }
 
     public void unlockAfter(Integer iid, Integer thread, Integer lock) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             if (ignoreRentrantLock.unlockAfter(thread, lock)) {
@@ -99,7 +94,7 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void startBefore(Integer iid, Integer parent, Integer child) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             System.out.println("startBefore: " +
@@ -111,7 +106,7 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void waitAfter(Integer iid, Integer thread, Integer lock) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             System.out.println("waitAfter: " +
@@ -123,7 +118,7 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void notifyBefore(Integer iid, Integer thread, Integer lock) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             System.out.println("notifyBefore: " +
@@ -135,7 +130,7 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void notifyAllBefore(Integer iid, Integer thread, Integer lock) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             System.out.println("notifyAllBefore: " +
@@ -147,7 +142,7 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void joinAfter(Integer iid, Integer parent, Integer child) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
             System.out.println("joinAfter: " +
                 "thread" + parent + " joins thread" + child + " @" +
                 javato.activetesting.analysis.Observer.getIidToLine(iid)
@@ -159,7 +154,7 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void readBefore(Integer iid, Integer thread, Long memory) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             LockSet ls = lsTracker.getLockSet(thread);
@@ -169,7 +164,7 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void writeBefore(Integer iid, Integer thread, Long memory) {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
 //    Your code goes here.
 //    In my implementation I had the following code:
             LockSet ls = lsTracker.getLockSet(thread);
@@ -179,7 +174,7 @@ public class HybridAnalysis extends AnalysisImpl {
     }
 
     public void finish() {
-        synchronized (ActiveChecker.lock) {
+        synchronized (myLock) {
             int nRaces=0; // nRaces must be equal to the number races detected by the hybrid race detector
 //    Your code goes here.
 //    In my implementation I had the following code:

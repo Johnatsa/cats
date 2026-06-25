@@ -5,8 +5,6 @@ import javato.activetesting.analysis.CheckerAnalysisImpl;
 import javato.activetesting.common.Parameters;
 import javato.activetesting.igoodlock.DeadlockCycleInfo;
 import javato.activetesting.igoodlock.Node;
-import javato.activetesting.lockset.LockSetTracker;
-import javato.activetesting.reentrant.IgnoreRentrantLock;
 
 import java.util.List;
 import java.util.HashSet;
@@ -17,15 +15,16 @@ public class DeadlockFuzzerAnalysis extends CheckerAnalysisImpl {
 
 
     public void initialize() {
-        DeadLockOracle.startDeadlockMoniton();
+        DeadLockOracle.startDeadlockMonitor();
 
         //Gets the iids of the threads in the deadlockcycle
         if(Parameters.errorId >= 0){
             DeadlockCycleInfo cycles = DeadlockCycleInfo.read();
             List<Node> deadlockingCycle = cycles.getCycles().get(Parameters.errorId - 1);
 
+
             for (Node node : deadlockingCycle) {
-                targetLockIids.addAll(node.getContext());
+                targetLockIDs.addAll(node.getContext());
             }
         }
     }
@@ -41,11 +40,11 @@ public class DeadlockFuzzerAnalysis extends CheckerAnalysisImpl {
 
     }
 
-    public void notifyBefore(Integer iid, Integer thread, Integer lock) {
+    public void notifyAfter(Integer iid, Integer thread, Integer lock) {
 
     }
 
-    public void notifyAllBefore(Integer iid, Integer thread, Integer lock) {
+    public void notifyAllAfter(Integer iid, Integer thread, Integer lock) {
         
     }
 
