@@ -27,7 +27,85 @@ public class LockWaitGraph {
         graph.get(n).add(e);
     }
 
-    public List<List<Edge>> getEdgeCycleList() {
-        return null;
+    public List<List<Edge>> findAllCycles() {
+        List<List<Edge>> cycles = new ArrayList<>();
+
+        List<Node> nodes = new ArrayList<>(graph.keySet());
+
+        for (Node start : nodes) {
+
+            Stack<Edge> edgeStack = new Stack<>();
+            Stack<Node> nodeStack = new Stack<>();
+
+            HashSet<Node> visited = new HashSet<>();
+
+            dfs(
+                start,
+                start,
+                visited,
+                nodeStack,
+                edgeStack,
+                cycles
+            );
+
+        }
+
+        return cycles;
+    }
+
+
+    private boolean dfs(
+            Node start,
+            Node current,
+            HashSet<Node> visited,
+            Stack<Node> nodeStack,
+            Stack<Edge> edgeStack,
+            List<List<Edge>> cycles
+    ) {
+
+        visited.add(current);
+        nodeStack.push(current);
+
+
+        for (Edge edge : graph.getOrDefault(current, new ArrayList<>())) {
+
+            Node next = edge.getEndNode();
+
+
+            // cycle found
+            if (next.equals(start)) {
+
+                List<Edge> cycle = new ArrayList<>(edgeStack);
+                cycle.add(edge);
+
+                cycles.add(cycle);
+
+            }
+
+
+            // continue searching
+            else if (!visited.contains(next)) {
+
+                edgeStack.push(edge);
+
+                dfs(
+                    start,
+                    next,
+                    visited,
+                    nodeStack,
+                    edgeStack,
+                    cycles
+                );
+
+                edgeStack.pop();
+            }
+        }
+
+
+        nodeStack.pop();
+        visited.remove(current);
+
+        return false;
     }
 }
+
