@@ -147,12 +147,16 @@ public class VisitorForActiveTesting extends Visitor {
         String sig = invokeExpr.getMethod().getSubSignature();
         if (sig.equals("void wait()")) {
             addCallWithObject(units, s, "myWaitAfter", base, false);
+            addCallWithObject(units, s, "myWaitBefore", base, true);
         } else if (sig.equals("void wait(long)") || sig.equals("void wait(long,int)")) {
             addCallWithObject(units, s, "myWaitAfter", base, false);
+            addCallWithObject(units, s, "myWaitBefore", base, true);
         } else if (sig.equals("void notify()")) {
             addCallWithObject(units, s, "myNotifyBefore", base, true);
+            addCallWithObject(units, s, "myNotifyAfter", base, false);
         } else if (sig.equals("void notifyAll()")) {
             addCallWithObject(units, s, "myNotifyAllBefore", base, true);
+            addCallWithObject(units, s, "myNotifyAllAfter", base, false);
         } else if (sig.equals("void start()") && isThreadSubType(invokeExpr.getMethod().getDeclaringClass())) {
             addCallWithObject(units, s, "myStartBefore", base, true);
         } else if (sig.equals("void join()") && isThreadSubType(invokeExpr.getMethod().getDeclaringClass())) {
