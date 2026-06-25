@@ -37,6 +37,18 @@ public class DeadlockFuzzerAnalysis extends CheckerAnalysisImpl {
         }
     }
 
+    public void waitBefore(Integer iid, Integer thread, Integer lock) {
+
+    }
+
+    public void notifyBefore(Integer iid, Integer thread, Integer lock) {
+
+    }
+
+    public void notifyAllBefore(Integer iid, Integer thread, Integer lock) {
+        
+    }
+
     //Ignore
     public void unlockAfter(Integer iid, Integer thread, Integer lock) {
     }
