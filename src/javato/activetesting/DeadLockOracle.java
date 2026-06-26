@@ -15,7 +15,15 @@ public class DeadLockOracle{
                     long[] deadlockedThreadIDs = bean.findDeadlockedThreads();
                     if(deadlockedThreadIDs != null){
                         //Deadlock found
-                        System.out.println("Deadlock found");
+                        StringBuilder iids = new StringBuilder();
+                        for(long tid : deadlockedThreadIDs){
+                            Integer frozenIid = DeadlockFuzzerAnalysis.activeTraps.get(tid);
+                            if(frozenIid != null)
+                                iids.append(frozenIid).append(" ");
+                        }
+                        
+                        BugLogger.log("Deadlock", deadlockedThreadIDs.length, iids.toString().trim());
+
                         System.exit(4243); //Code for deadlock
                     }
                     Thread.sleep(500);

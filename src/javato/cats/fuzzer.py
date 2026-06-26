@@ -39,7 +39,8 @@ def run_fuzzer(initial_list):
     best_distance = float('inf')
 
     execs = 0
-    while(1):
+    while(execs < 1000):
+        System.out.println("Execution " + exec)
         execs += 1
         current_tape = mutate_tape(best_tape)
         save_tape(current_tape)
@@ -50,12 +51,21 @@ def run_fuzzer(initial_list):
             #Caused a hang
             continue
         if result.returncode == 4242:
+            System.out.println("Race condition found")
             #Got a race condition 
             #Save it somewhere
             #either break or continue to some depth
             while(0):       # put only so no errors exist
                 pass
-        if result.returncode == 4243 | result.returncode == 4244:
+        if result.returncode == 4243 
+            System.out.println("Deadlock found")
+            #Got a deadlock
+            #Save it somewhere
+            #either break or continue to some depth
+            while(0):       # put only so no errors exist
+                pass
+        if result.returncode == 4244 
+            System.out.println("Wait only thread found")
             #Got a deadlock
             #Save it somewhere
             #either break or continue to some depth
@@ -70,7 +80,7 @@ def run_fuzzer(initial_list):
             best_tape = current_tape
         else:
             pass
-
+    System.println("Executions finished, check the /tmp/bugs.txt file")
     
     #initial_list = [] #the result of the racerD analysis
     #run_fuzzer(initial_list)
