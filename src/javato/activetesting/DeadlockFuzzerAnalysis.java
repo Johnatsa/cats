@@ -102,7 +102,7 @@ public class DeadlockFuzzerAnalysis extends CheckerAnalysisImpl {
                     }
                 }
 
-                if(parkedIids.containsAll(targetLockIDs)){
+                if(cycleTriggered){
                     coordinator.notifyAll();;
                 } else{
                     try{
