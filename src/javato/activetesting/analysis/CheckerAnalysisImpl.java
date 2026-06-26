@@ -1,7 +1,5 @@
 package javato.activetesting.analysis;
 
-import javato.activetesting.common.Parameters;
-
 /**
  * Copyright (c) 2007-2008,
  * Koushik Sen    <ksen@cs.berkeley.edu>
