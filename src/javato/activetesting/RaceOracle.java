@@ -14,19 +14,11 @@ public class RaceOracle{
     public static void checkCollision(Long memoryAddress, Integer iid){
         long currentTime = System.nanoTime();
 
-<<<<<<< HEAD
-        activeAccesses.putIfAbsent(memoryAddress, java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap()));
-        Set<Long> threadsPresent = activeAccesses.get(memoryAddress);
-
-        long myThreadId = Thread.currentThread().getId();
-        threadsPresent.add(myThreadId);
-=======
-        activeAccesses.putIfAbsent(memoryAddress, new ConcurrentHashMap<>());
+        activeAccesses.putIfAbsent(memoryAddress, new java.util.concurrent.ConcurrentHashMap<Long, Integer>());
         ConcurrentHashMap<Long, Integer> threadsPresent = activeAccesses.get(memoryAddress);
 
-        long myThreadId = Thread.currentThread().threadId(); 
+        long myThreadId = Thread.currentThread().getId(); 
         threadsPresent.put(myThreadId, iid);
->>>>>>> refs/remotes/origin/master
 
         if(threadsPresent.size() > 1){
             //Win! Found a data race

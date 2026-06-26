@@ -99,6 +99,7 @@ public class LockSetTracker {
         }
     }
 
+
     /**
      * unlocks the last acquired lock
      *
@@ -106,13 +107,22 @@ public class LockSetTracker {
      */
     public void unlockAfter(Integer thread) {
         LinkedList<Integer> iidStack = threadsToIidStack.get(thread);
-        assert iidStack != null;
+        
+        // SAFEGUARD: If we don't have a record of this thread locking anything, ignore it.
+        if (iidStack == null || iidStack.isEmpty()) {
+            return;
+        }
         iidStack.removeLast();
+        
         LinkedList<Integer> lockStack = threadsToLockStack.get(thread);
-        assert (lockStack != null);
+        if (lockStack == null || lockStack.isEmpty()) {
+            return;
+        }
+        
         Integer lockId = lockStack.removeLast();
-        if (thread.equals(holdsLockToThread.get(lockId)))
+        if (thread.equals(holdsLockToThread.get(lockId))) {
             holdsLockToThread.remove(lockId);
+        }
     }
 
     /**

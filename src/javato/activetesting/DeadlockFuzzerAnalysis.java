@@ -99,7 +99,7 @@ public class DeadlockFuzzerAnalysis extends CheckerAnalysisImpl {
             synchronized(coordinator){
                 parkedIids.add(iid);
                 
-                long currentThread = Thread.currentThread().threadId();
+                long currentThread = Thread.currentThread().getId();
                 activeTraps.put(currentThread, iid);
 
 

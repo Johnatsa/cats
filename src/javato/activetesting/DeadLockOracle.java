@@ -6,7 +6,6 @@ import java.lang.management.ThreadMXBean;
 public class DeadLockOracle {
     //Its a daemon running and just checking for deadlocks every 500ms
 
-<<<<<<< HEAD
     public static void startDeadlockMonitor() {
         Thread monitor = new Thread(new Runnable() {
             @Override
@@ -23,26 +22,6 @@ public class DeadLockOracle {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         break;
-=======
-    public static void startDeadlockMonitor(){
-        Thread monitor = new Thread(()->{
-            ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-            while(true){
-                try{
-                    long[] deadlockedThreadIDs = bean.findDeadlockedThreads();
-                    if(deadlockedThreadIDs != null){
-                        //Deadlock found
-                        StringBuilder iids = new StringBuilder();
-                        for(long tid : deadlockedThreadIDs){
-                            Integer frozenIid = DeadlockFuzzerAnalysis.activeTraps.get(tid);
-                            if(frozenIid != null)
-                                iids.append(frozenIid).append(" ");
-                        }
-                        
-                        BugLogger.log("Deadlock", deadlockedThreadIDs.length, iids.toString().trim());
-
-                        System.exit(4243); //Code for deadlock
->>>>>>> refs/remotes/origin/master
                     }
                 }
             }
