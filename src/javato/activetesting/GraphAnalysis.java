@@ -20,12 +20,14 @@ public class GraphAnalysis extends AnalysisImpl {
     private Map<Integer, ArrayList<LockNode>> threadLockStack;
     private Map<Integer, WaitNode> waitNodeByLock;
     private LinkedHashSet<Integer> candidateIids;
-    private final Object myLock = new Object();
+    private Object myLock;
     private Map<Integer, LockNode> lockNodeByLock;
 
 
 
     public void initialize() {
+        myLock = new Object(); // <-- Instantiate the lock here first!
+        
         synchronized (myLock) {
             graph = new LockWaitGraph();
             threadLockStack = new HashMap<Integer, ArrayList<LockNode>>();

@@ -3,13 +3,18 @@ WORK_DIR := src/benchmarks
 APP_MAIN := benchmarks.testcases.TestRace1
 APP_CLASSES := $(WORK_DIR)/classes
 TMP_CLASSES := $(WORK_DIR)/tmpclasses
-SOURCE_LEVEL := 8
-TARGET_LEVEL := 8
-JAVA ?= java
-JAVAC ?= javac
-JAVA8_RT := $(JAVA_HOME)/jre/lib/rt.jar
-JAVA8_JCE := $(JAVA_HOME)/jre/lib/jce.jar
-JAVA_BOOT_ARG := $(if $(wildcard $(JAVA8_RT)),-Dsun.boot.class.path=$(JAVA8_RT):$(JAVA8_JCE),)
+
+# --- UPDATED FOR JAVA 7 ---
+JAVA_HOME := /usr/lib/jvm/zulu7-ca-amd64
+JAVA := $(JAVA_HOME)/bin/java
+JAVAC := $(JAVA_HOME)/bin/javac
+SOURCE_LEVEL := 1.7
+TARGET_LEVEL := 1.7
+# --------------------------
+
+JAVA7_RT := $(JAVA_HOME)/jre/lib/rt.jar
+JAVA7_JCE := $(JAVA_HOME)/jre/lib/jce.jar
+JAVA_BOOT_ARG := $(if $(wildcard $(JAVA7_RT)),-Dsun.boot.class.path=$(JAVA7_RT):$(JAVA7_JCE),)
 
 empty :=
 space := $(empty) $(empty)

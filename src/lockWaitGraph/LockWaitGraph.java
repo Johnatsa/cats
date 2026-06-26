@@ -1,4 +1,5 @@
 package lockWaitGraph;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
@@ -31,11 +32,9 @@ public class LockWaitGraph {
 
     public void findAllCycles() {
         List<List<Edge>> cycles = new ArrayList<>();
-
         List<Node> nodes = new ArrayList<>(graph.keySet());
 
         for (Node start : nodes) {
-
             Stack<Edge> edgeStack = new Stack<>();
             Stack<Node> nodeStack = new Stack<>();
             HashSet<Node> visited = new HashSet<>();
@@ -48,20 +47,15 @@ public class LockWaitGraph {
                 edgeStack,
                 cycles
             );
-
         }
     
         // --- convert to tids ---
         List<List<Integer>> cycleTids = new ArrayList<>();
-
         for (List<Edge> cycle : cycles) {
-
             List<Integer> tids = new ArrayList<>();
-
             for (Edge edge : cycle) {
                 tids.add(edge.getTid());
             }
-
             cycleTids.add(tids);
         }
 
@@ -75,12 +69,10 @@ public class LockWaitGraph {
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
-
             mapper.writeValue(
                 new File("graph_cycles.json"),
                 result
             );
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -99,28 +91,24 @@ public class LockWaitGraph {
         visited.add(current);
         nodeStack.push(current);
 
+        // [JAVA 7 FIX]: Replaced graph.getOrDefault(...)
+        List<Edge> edges = graph.get(current);
+        if (edges == null) {
+            edges = new ArrayList<Edge>();
+        }
 
-        for (Edge edge : graph.getOrDefault(current, new ArrayList<>())) {
-
+        for (Edge edge : edges) {
             Node next = edge.getEndNode();
-
 
             // cycle found
             if (next.equals(start)) {
-
                 List<Edge> cycle = new ArrayList<>(edgeStack);
                 cycle.add(edge);
-
                 cycles.add(cycle);
-
             }
-
-
             // continue searching
             else if (!visited.contains(next)) {
-
                 edgeStack.push(edge);
-
                 dfs(
                     start,
                     next,
@@ -129,11 +117,9 @@ public class LockWaitGraph {
                     edgeStack,
                     cycles
                 );
-
                 edgeStack.pop();
             }
         }
-
 
         nodeStack.pop();
         visited.remove(current);
@@ -142,72 +128,61 @@ public class LockWaitGraph {
     }
 
     private List<Integer> findWaitNodeTids(HashMap<Node, List<Edge>> graph) {
-
         HashMap<Node, List<Edge>> incoming = new HashMap<>();
 
         // Build incoming edges
         for (Node from : graph.keySet()) {
-
             for (Edge edge : graph.get(from)) {
-
-                incoming
-                    .computeIfAbsent(edge.getEndNode(), k -> new ArrayList<>())
-                    .add(edge);
+                
+                // [JAVA 7 FIX]: Replaced computeIfAbsent lambda
+                Node endNode = edge.getEndNode();
+                List<Edge> inEdgesList = incoming.get(endNode);
+                if (inEdgesList == null) {
+                    inEdgesList = new ArrayList<Edge>();
+                    incoming.put(endNode, inEdgesList);
+                }
+                inEdgesList.add(edge);
             }
         }
 
-
         List<Integer> result = new ArrayList<>();
 
-
         for (Node node : graph.keySet()) {
-
             if (!(node instanceof WaitNode))
                 continue;
-
 
             List<Edge> inEdges = incoming.get(node);
 
             if (inEdges == null || inEdges.isEmpty())
                 continue;
 
-
             boolean onlyWait = true;
 
-
             for (Edge e : inEdges) {
-
                 if (!(e instanceof WaitEdge)) {
                     onlyWait = false;
                     break;
                 }
 
-
                 WaitEdge we = (WaitEdge)e;
-
                 if (we.getEdgeType() != WaitEdge.CallType.WAIT) {
                     onlyWait = false;
                     break;
                 }
             }
 
-
             if (onlyWait) {
-
                 // take any incoming edge
                 result.add(
                     inEdges.get(0).getTid()
                 );
             }
         }
-
-
         return result;
     }
 }
 
 class AnalysisResult {
-
     public List<List<Integer>> cycles;
     public List<Integer> waitNodes;
 
