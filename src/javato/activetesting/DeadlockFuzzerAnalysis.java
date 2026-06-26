@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +27,9 @@ public class DeadlockFuzzerAnalysis extends CheckerAnalysisImpl {
 
     //lock used to freeze the threads
     private final Object coordinator = new Object();
+
+    //Maps thread ids to iids
+    public static final ConcurrentHashMap<Long, Integer> activeTraps = new ConcurrentHashMap<>();
 
 
     public void initialize() {
@@ -88,11 +92,16 @@ public class DeadlockFuzzerAnalysis extends CheckerAnalysisImpl {
         if(targetLockIDs.contains(iid)){
             
             if(waitOnlyNodes.contains(iid)){
+                BugLogger.log("WaitOnlyNode", 1, String.valueOf(iid));
                 System.exit(4244); //error code for waitOnlyNode
             }
 
             synchronized(coordinator){
                 parkedIids.add(iid);
+                
+                long currentThread = Thread.currentThread().threadId();
+                activeTraps.put(currentThread, iid);
+
 
                 boolean cycleTriggered = false;
                 for(HashSet<Integer> cycle : allCycles){
