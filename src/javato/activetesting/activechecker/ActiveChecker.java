@@ -15,15 +15,20 @@ public class ActiveChecker {
     }
 
     private static void loadTape(){
-        String tape = new String(Files.readAllBytes(Paths.get("/tmp/tape.txt")));
+        String tape = null;
+        try{
+          tape = new String(Files.readAllBytes(Paths.get("/tmp/tape.txt")));
+        } catch(Exception e){
+            System.out.println("tape creation" + e);
+        }
 
         //Tape format = {"45": 10, "90": 0} (iid : delay)
         tape = tape.replaceAll("[{}\"\\s]", "");
-        if(!tape.isEmpty()){
+        if(tape != null){
             String[] pairs = tape.split(",");
             for (String pair : pairs){
                 String[] curr = pair.split(":");
-                fuzzerTape.put(Integer.parseInt(curr[0]), Integer.parseInt(curr[1]))
+                fuzzerTape.put(Integer.parseInt(curr[0]), Integer.parseInt(curr[1]));
             }
         }
     }
@@ -33,6 +38,11 @@ public class ActiveChecker {
     final public static void fuzzDelay(Integer iid){
         Integer delay = fuzzerTape.get(iid);
         
-        Thread.sleep(delay);
+        // Athena: What if delay is null
+        try{
+            Thread.sleep(delay);
+        } catch(Exception e){
+            System.out.println("Thread sleep" + e);
+        }
     }
 }

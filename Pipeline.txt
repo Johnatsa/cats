@@ -1,0 +1,70 @@
+Part 1: instrumentation
+ ___________________________________________________________________________________
+| Input: Compiled Target Java Program                                               |
+|     ↓                                                                             |
+|   Goes through instrumentation                                                    |
+|   InstrumentorForActiveTesting + VisitorForActiveTesting + Soot (?)               |
+|     ↓                                                                             |
+| Output: New Bytecode with Tags                                                    |
+|___________________________________________________________________________________|
+
+
+Part 2a: graph analysis
+ ___________________________________________________________________________________
+| Input: Output of instrumentation                                                  |
+|     ↓                                                                             |
+|   Maps every tag/iid to: {thread id, lock id, memory id, wait/notify info}        |
+|     ↓                                                                             |
+|   Fill LockWaitGraph / Use GraphAnalysis                                          |
+|     ↓                                                                             |
+| Output: Candidate iid list / graph file                                           |
+|___________________________________________________________________________________|
+
+Part 2b: deadlock analysis
+ ___________________________________________________________________________________
+| Input: Output of instrumentation                                                  |
+|     ↓                                                                             |
+|   Maps every tag/iid to: {thread id, lock id, memory id, wait/notify info}        |
+|     ↓                                                                             |
+|   Use HybridAnalysis                                                              |
+|     ↓                                                                             |
+| Output: Candidate iid list / graph file                                           |
+|___________________________________________________________________________________|
+
+
+Part 3: fuzzer
+ ___________________________________________________________________________________
+| input: candidate iid list from GraphAnalysis & HybridAnalysis                     |
+|   ↓                                                                               |
+| create a tape:                                                                    |
+|   { iid: delay_ms }                                                               |
+|   ↓                                                                               |
+| save tape to /tmp/tape.txt                                                        |
+|   ↓                                                                               |
+| run instrumented target with RaceFuzzerAnalysis or DeadlockFuzzerAnalysis         |
+|   ↓                                                                               |
+| ActiveChecker reads /tmp/tape.txt                                                 |
+|   ↓                                                                               |
+| when execution reaches a target iid:                                              |
+|    sleep/delay/yield                                                              |
+|   ↓                                                                               |
+| if race/deadlock happens:                                                         |
+|   output FOUND                                                                    |
+| else:                                                                             |
+|   mutate the tape and try again                                                   |
+|___________________________________________________________________________________|
+
+
+
+
+
+
+Tags can be:
+    - ObserverForActiveTesting.myLockBefore(iid, lock);
+    - ObserverForActiveTesting.myReadBefore(iid, object, field);
+    - ObserverForActiveTesting.myWriteBefore(iid, object, field);
+    - ObserverForActiveTesting.myUnlockAfter(iid, lock);
+
+
+Athena: Next step make output to graph_iids.txt and race_iids.txt
+        Use finish methods in analysis.

@@ -3,17 +3,10 @@ package javato.activetesting;
 import javato.activetesting.analysis.CheckerAnalysisImpl;
 import javato.activetesting.common.Parameters;
 
-import java.util.Set;
+
 import java.util.LinkedHashSet;
-import java.util.Collection;
-
 import javato.activetesting.activechecker.ActiveChecker;
-import javato.activetesting.HybridRaceTracker;
-import javato.activetesting.analysis.Observer;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.ConcurrentHashMap;
-import java.io.FileWriter;
 
 /**
  * Copyright (c) 2007-2008,
@@ -113,43 +106,5 @@ public class RaceFuzzerAnalysis extends CheckerAnalysisImpl {
 
     public void finish() {
 //  ignore this
-    }
-}
-
-
-public class RaceOracle{
-    //How many threads are in a specific area right now
-    static ConcurrentHashMap<Long, Set<Long>> activeAccesses = new ConcurrentHashMap<>();
-
-    //The last time each address was touched
-    static ConcurrentHashMap<Long, Long> lastAccessTime = new ConcurrentHashMap<>();
-
-    public static void checkCollision(Long memoryAddress, Integer iid){
-        long currentTime = System.nanoTime();
-
-        activeAccesses.putIfAbsent(memoryAddress, ConcurrentHashMap.newKeySet());
-        Set<Long> threadsPresent = activeAccesses.get(memoryAddress);
-
-        long myThreadId = Thread.currentThread().getId(); 
-        threadsPresent.add(myThreadId);
-
-        if(threadsPresent.size() > 1){
-            //Win! Found a data race
-            System.exit(4242); //Code for our fuzzer to know that it exited from a date race
-        }
-
-        //Calculate how far apart were the thread accesses to a specific memory address in order to guide the mutations
-        Long previousTime = lastAccessTime.put(memoryAddress, currentTime); //Returns the previous value
-        if (previousTime != null){
-            long distance = Math.abs(currentTime - previousTime);
-            writeFeedback(distance);
-        }
-
-        threadsPresent.remove(myThreadId);
-    }
-
-    public static synchronized void writeFeedback(long distance){
-        FileWriter fw = new FileWriter("/tmp/fuzzer_feedback.txt");
-        fw.write(String.valueOf(distance));
     }
 }

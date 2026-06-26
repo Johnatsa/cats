@@ -25,7 +25,7 @@ def mutate_tape(current_tape):
         #Completely random new delay
         new_tape[target_iid] = random.randint(0,100)
 
-def get_distance()
+def get_distance():
     with open (FEEDBACK, "r") as f:
         return int(f.read().strip())
 
@@ -45,7 +45,7 @@ def run_fuzzer(initial_list):
         save_tape(current_tape)
 
         try:
-            result = subprocess.run(TARGET, capture_output=TRUE, text=TRUE, timeout=5.0)
+            result = subprocess.run(TARGET, capture_output=True, text=True, timeout=5.0)
         except subprocess.TimeoutExpired:
             #Caused a hang
             continue
@@ -53,10 +53,14 @@ def run_fuzzer(initial_list):
             #Got a race condition 
             #Save it somewhere
             #either break or continue to some depth
-        if result.returncode = 4243:
+            while(0):       # put only so no errors exist
+                pass
+        if result.returncode == 4243:
             #Got a deadlock
             #Save it somewhere
             #either break or continue to some depth
+            while(0):       # put only so no errors exist
+                pass
 
         current_distance = get_distance()
 
@@ -69,3 +73,13 @@ def run_fuzzer(initial_list):
     
     #initial_list = [] #the result of the racerD analysis
     #run_fuzzer(initial_list)
+
+def get_initial_list():
+    deadlock_iids = read_file("graph_iids.txt")  # from GraphAnalysis
+    race_iids = read_file("race_iids.txt")       # from HybridAnalysis
+    return list(set(deadlock_iids + race_iids))  # merge and deduplicate
+
+def read_file (filename):
+    # Read
+    with open(filename, "r") as f:
+        return [line.strip() for line in f.readlines()]

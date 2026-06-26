@@ -1,9 +1,5 @@
 package javato.activetesting.analysis;
 
-import javato.activetesting.common.Parameters;
-import javato.activetesting.scheduler.LivelockBreaker;
-import javato.activetesting.scheduler.StallBreaker;
-
 /**
  * Copyright (c) 2007-2008,
  * Koushik Sen    <ksen@cs.berkeley.edu>
@@ -39,8 +35,6 @@ import javato.activetesting.scheduler.StallBreaker;
 abstract public class CheckerAnalysisImpl extends Thread implements Analysis {
     public CheckerAnalysisImpl() {
         initialize();
-        (new LivelockBreaker(Parameters.livelockCheckerInterval)).start();
-        (new StallBreaker()).start();
         Runtime.getRuntime().addShutdownHook(this);
     }
 
