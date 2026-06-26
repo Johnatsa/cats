@@ -14,20 +14,13 @@
 #      -> reports race/deadlock if return code says 4242 / 4243
 
 
-import subprocess
+
 from fuzzer import run_fuzzer, get_initial_list
 
-
 def main():
-    # Step 1: Instrument the target program
-    subprocess.run(["make", "instr"], check=True)
-    
-    # Step 2a: Run the instrumented program with graph analysis
-    subprocess.run(["make", "graph"], check=True)
-
-    # Step 2b: Run the instrumented program with deadlock analysis
-    subprocess.run(["make", "race"], check=True)
-
-    # Step 3: Call the fuzzer
+    # Step 3: Call the fuzzer directly, assuming Make already did Steps 1 & 2
     initial_list = get_initial_list()
     run_fuzzer(initial_list)
+
+if __name__ == "__main__":
+    main()

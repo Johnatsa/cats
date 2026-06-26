@@ -67,6 +67,6 @@ race:
 		$(APP_MAIN)
 
 fuzz:
-	python3 src/javato/cats/main.py --fuzz-only
+	python3 src/javato/cats/main.py
 
 cats: instr graph race fuzz
