@@ -7,6 +7,11 @@ import javato.activetesting.lockset.LockSet;
 import javato.activetesting.lockset.LockSetTracker;
 import javato.activetesting.reentrant.IgnoreRentrantLock;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.LinkedHashSet;
+
 
 /**
  * Copyright (c) 2007-2008,
@@ -185,7 +190,30 @@ public class HybridAnalysis extends AnalysisImpl {
 //    This file is used by run.xml to initialize Parameters.errorId with a number from from the list.
 //    Parameters.errorId tells RaceFuzzer the id of the race that RaceFuzzer should try to create
             Parameters.writeIntegerList(Parameters.ERROR_LIST_FILE, nRaces);
+            writeRaceIids("race_iids.txt");
+        }
+    }
+
+    private void writeRaceIids(String fileName) {
+        LinkedHashSet<CommutativePair> races = HybridRaceTracker.getRacesFromFile();
+        if (races == null) {
+            return;
+        }
+
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(new FileWriter(fileName));
+            for (CommutativePair race : races) {
+                out.println(race.x);
+                out.println(race.y);
+            }
+            System.out.println("*--> HybridAnalysis wrote race iids to " + fileName);
+        } catch (IOException e) {
+            System.err.println("Could not write " + fileName + ": " + e);
+        } finally {
+            if (out != null) {
+                out.close();
+            }
         }
     }
 }
-

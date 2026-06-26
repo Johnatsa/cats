@@ -3,19 +3,42 @@ WORK_DIR := src/benchmarks
 APP_MAIN := benchmarks.testcases.TestRace1
 APP_CLASSES := $(WORK_DIR)/classes
 TMP_CLASSES := $(WORK_DIR)/tmpclasses
+SOURCE_LEVEL := 8
+TARGET_LEVEL := 8
+JAVA ?= java
+JAVAC ?= javac
+JAVA8_RT := $(JAVA_HOME)/jre/lib/rt.jar
+JAVA8_JCE := $(JAVA_HOME)/jre/lib/jce.jar
+JAVA_BOOT_ARG := $(if $(wildcard $(JAVA8_RT)),-Dsun.boot.class.path=$(JAVA8_RT):$(JAVA8_JCE),)
+
+empty :=
+space := $(empty) $(empty)
+JARS := $(wildcard lib/*.jar)
+JAR_CP := $(subst $(space),:,$(JARS))
+TOOL_CP := classes:$(APP_CLASSES):$(JAR_CP)
+RUNTIME_CP := $(TMP_CLASSES):$(APP_CLASSES):classes:$(JAR_CP)
 
 .PHONY: build clean instr graph fuzz cats
 
-build:
-	ant build
+build: build-tools build-app
+
+build-tools:
+	mkdir -p classes
+	find src/javato src/lockWaitGraph -name '*.java' > /tmp/cats_tool_sources.txt
+	$(JAVAC) -source $(SOURCE_LEVEL) -target $(TARGET_LEVEL) -cp "$(TOOL_CP)" -d classes @/tmp/cats_tool_sources.txt
+
+build-app:
+	mkdir -p $(APP_CLASSES)
+	$(JAVAC) -source $(SOURCE_LEVEL) -target $(TARGET_LEVEL) -cp "classes:$(APP_CLASSES)" -sourcepath src -d $(APP_CLASSES) src/$(subst .,/,$(APP_MAIN)).java
 
 clean:
 	rm -rf $(TMP_CLASSES)
 	rm -f $(WORK_DIR)/iidToLine.map $(WORK_DIR)/iidToLine.map.html
 	rm -f $(WORK_DIR)/error.list $(WORK_DIR)/error.log $(WORK_DIR)/error.stat
+	rm -f graph_cycles.json graph_iids.txt race_iids.txt
 
 instr: clean build
-	java -cp classes:lib/soot.jar \
+	$(JAVA) $(JAVA_BOOT_ARG) -cp "$(TOOL_CP)" \
 		javato.activetesting.instrumentor.InstrumentorForActiveTesting \
 		-keep-line-number \
 		-process-dir $(APP_CLASSES) \
@@ -26,16 +49,16 @@ instr: clean build
 
 # run analysis with GraphAnalysis
 graph:
-	java -ea \
+	$(JAVA) -ea \
 		-Djavato.activetesting.analysis.class=javato.activetesting.GraphAnalysis \
-		-cp $(TMP_CLASSES):$(APP_CLASSES):classes \
+		-cp "$(RUNTIME_CP)" \
 		$(APP_MAIN)
 
 # run analysis with HybridAnalysis
 race:
-	java -ea \
+	$(JAVA) -ea \
 		-Djavato.activetesting.analysis.class=javato.activetesting.HybridAnalysis \
-		-cp $(TMP_CLASSES):$(APP_CLASSES):classes \
+		-cp "$(RUNTIME_CP)" \
 		$(APP_MAIN)
 
 fuzz:

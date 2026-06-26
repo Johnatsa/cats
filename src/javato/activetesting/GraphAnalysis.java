@@ -1,11 +1,15 @@
 package javato.activetesting;
 
 import javato.activetesting.analysis.AnalysisImpl;
-import cats_src.lockWaitGraph.*;
+import lockWaitGraph.*;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 // Step 2 of the project: Will fill out the graph
 // 1) Receive events from ObserverForActiveTesting 
@@ -15,7 +19,9 @@ public class GraphAnalysis extends AnalysisImpl {
     private LockWaitGraph graph;
     private Map<Integer, ArrayList<LockNode>> threadLockStack;
     private Map<Integer, WaitNode> waitNodeByLock;
+    private LinkedHashSet<Integer> candidateIids;
     private final Object myLock = new Object();
+    private Map<Integer, LockNode> lockNodeByLock;
 
 
 
@@ -24,13 +30,22 @@ public class GraphAnalysis extends AnalysisImpl {
             graph = new LockWaitGraph();
             threadLockStack = new HashMap<Integer, ArrayList<LockNode>>();
             waitNodeByLock = new HashMap<Integer, WaitNode>();
+            candidateIids = new LinkedHashSet<Integer>();
+            lockNodeByLock = new HashMap<Integer, LockNode>();
         }
     }
 
     // lockBefore and unlockAfter usually create or advance lock-related nodes.
     public void lockBefore(Integer iid, Integer thread, Integer lock){
         synchronized (myLock) {
-            LockNode current = new LockNode(iid.toString(), lock);
+            LockNode current = lockNodeByLock.get(lock);
+            if (current == null) {
+                current = new LockNode("lock-" + lock, lock);
+                graph.addNode(current);
+                lockNodeByLock.put(lock, current);
+            }
+            current.addLine(iid);
+            
             graph.addNode(current);
 
             ArrayList<LockNode> stack = threadLockStack.get(thread);
@@ -46,6 +61,8 @@ public class GraphAnalysis extends AnalysisImpl {
 
             if (previous != null) {
                 graph.addEdge(previous, new Edge(thread, current, previous));
+                candidateIids.add(Integer.valueOf(previous.getId()));
+                candidateIids.add(iid);
             }
 
             stack.add(current);
@@ -120,8 +137,15 @@ public class GraphAnalysis extends AnalysisImpl {
 
 
     // finish() is where you usually run cycle detection and export the result for the fuzzer.
-    public void finish(){
-        // 6
+    public void finish() {
+        synchronized (myLock) {
+            graph.findAllCycles();
+            writeCandidateIids("graph_iids.txt"); // optional, only if fuzzer still needs iids
+
+            System.out.println("*--> GraphAnalysis wrote graph_cycles.json");
+            System.out.println("*--> GraphAnalysis wrote " + candidateIids.size()
+                + " candidate iids to graph_iids.txt");
+        }
     }
 
 
@@ -140,6 +164,23 @@ public class GraphAnalysis extends AnalysisImpl {
         }
 
         waitNode.addLine(iid);
+        candidateIids.add(iid);
         graph.addEdge(stack.get(stack.size() - 1), new WaitEdge(thread, waitNode, stack.get(stack.size() - 1), type));
+    }
+
+    private void writeCandidateIids(String fileName) {
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(new FileWriter(fileName));
+            for (Integer iid : candidateIids) {
+                out.println(iid);
+            }
+        } catch (IOException e) {
+            System.err.println("Could not write " + fileName + ": " + e);
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+        }
     }
 }
