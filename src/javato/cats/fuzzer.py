@@ -75,6 +75,11 @@ def run_fuzzer(initial_list):
     #run_fuzzer(initial_list)
 
 def get_initial_list():
-    # Returns the initial list of iids from the static analysis
-    # For now, we will just return a hardcoded list
-    return [1, 2, 3, 4, 5]
+    deadlock_iids = read_file("graph_iids.txt")  # from GraphAnalysis
+    race_iids = read_file("race_iids.txt")       # from HybridAnalysis
+    return list(set(deadlock_iids + race_iids))  # merge and deduplicate
+
+def read_file (filename):
+    # Read
+    with open(filename, "r") as f:
+        return [line.strip() for line in f.readlines()]

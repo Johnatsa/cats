@@ -1,6 +1,11 @@
 package cats_src.lockWaitGraph;
 
 public class WaitEdge extends Edge {
+    public enum CallType {
+        WAIT,
+        NOTIFY
+    }
+
     private int cond_after;
 
     private CallType type;
@@ -24,9 +29,4 @@ public class WaitEdge extends Edge {
     public CallType getEdgeType() {
         return type;
     }
-}
-
-enum CallType {
-    WAIT,
-    NOTIFY
 }

@@ -1,6 +1,6 @@
 package cats_src.lockWaitGraph;
 
-import cats_src.*;
+// import cats_src.*;
 import java.util.*;
 
 public class LockNode extends Node {

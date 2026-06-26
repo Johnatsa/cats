@@ -22,8 +22,11 @@ def main():
     # Step 1: Instrument the target program
     subprocess.run(["make", "instr"], check=True)
     
-    # Step 2: Run the instrumented program with CATS analysis
+    # Step 2a: Run the instrumented program with graph analysis
     subprocess.run(["make", "graph"], check=True)
+
+    # Step 2b: Run the instrumented program with deadlock analysis
+    subprocess.run(["make", "race"], check=True)
 
     # Step 3: Call the fuzzer
     initial_list = get_initial_list()

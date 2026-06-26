@@ -24,13 +24,21 @@ instr: clean build
 		-x javato \
 		--app $(APP_MAIN)
 
+# run analysis with GraphAnalysis
 graph:
 	java -ea \
 		-Djavato.activetesting.analysis.class=javato.activetesting.GraphAnalysis \
 		-cp $(TMP_CLASSES):$(APP_CLASSES):classes \
 		$(APP_MAIN)
 
+# run analysis with HybridAnalysis
+race:
+	java -ea \
+		-Djavato.activetesting.analysis.class=javato.activetesting.HybridAnalysis \
+		-cp $(TMP_CLASSES):$(APP_CLASSES):classes \
+		$(APP_MAIN)
+
 fuzz:
 	python3 src/javato/cats/main.py --fuzz-only
 
-cats: instr graph fuzz
+cats: instr graph race fuzz
