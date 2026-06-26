@@ -55,7 +55,7 @@ def run_fuzzer(initial_list):
             #either break or continue to some depth
             while(0):       # put only so no errors exist
                 pass
-        if result.returncode == 4243 || result.returncode == 4244:
+        if result.returncode == 4243 | result.returncode == 4244:
             #Got a deadlock
             #Save it somewhere
             #either break or continue to some depth

@@ -45,7 +45,7 @@ public class GraphAnalysis extends AnalysisImpl {
             }
 
             if (previous != null) {
-                graph.addEdge(previous, new Edge(thread, current));
+                graph.addEdge(previous, new Edge(thread, current, previous));
             }
 
             stack.add(current);
@@ -140,6 +140,6 @@ public class GraphAnalysis extends AnalysisImpl {
         }
 
         waitNode.addLine(iid);
-        graph.addEdge(stack.get(stack.size() - 1), new WaitEdge(thread, waitNode, type));
+        graph.addEdge(stack.get(stack.size() - 1), new WaitEdge(thread, waitNode, stack.get(stack.size() - 1), type));
     }
 }

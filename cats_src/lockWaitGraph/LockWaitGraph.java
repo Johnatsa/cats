@@ -185,7 +185,7 @@ public class LockWaitGraph {
 
                 WaitEdge we = (WaitEdge)e;
 
-                if (we.getEdgeType() != CallType.WAIT) {
+                if (we.getEdgeType() != WaitEdge.CallType.WAIT) {
                     onlyWait = false;
                     break;
                 }
