@@ -5,14 +5,14 @@ public class WaitEdge extends Edge {
 
     private CallType type;
 
-    public WaitEdge(int tid, Node end, int cond_after, CallType type) {
-        super(tid, end);
+    public WaitEdge(int tid, Node end, Node start, int cond_after, CallType type) {
+        super(tid, end, start);
         this.type = type;
         this.cond_after = cond_after;
     }
 
-    public WaitEdge(int tid, Node end, CallType type) {
-        super(tid, end);
+    public WaitEdge(int tid, Node end, Node start, CallType type) {
+        super(tid, end, start);
         this.type = type;
         this.cond_after = -1;
     }
