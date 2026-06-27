@@ -39,22 +39,26 @@ import java.util.LinkedList;
  */
 public class ObserverForActiveTesting extends Observer {
     private static SyncMethodCache cache = new SyncMethodCache();
-    private static Analysis analysis;
+    public static Analysis analysis;
 
     static {
-        System.out.println("Analysis class " + Parameters.analysisClass);
-        if (Parameters.analysisClass != null) {
-            try {
-                Class t = Class.forName(Parameters.analysisClass);
-                analysis = (Analysis) t.newInstance();
-
-            } catch (Exception e) {
-                System.err.println("Cannot find or instantiate Analysis class: " + Parameters.analysisClass + Thread.currentThread());
-                e.printStackTrace();
-                System.exit(1);
-            }
+    String analysisClass = System.getProperty("javato.activetesting.analysis.class");
+    System.out.println("DEBUG: Observer is loading: " + analysisClass);
+    
+    if (analysisClass != null) {
+        try {
+            Class<?> t = Class.forName(analysisClass);
+            analysis = (Analysis) t.newInstance();
+            analysis.initialize();
+            
+            // This ensures the correct analysis is set regardless of what 
+            // the HybridAnalysis phase did earlier!
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
+}
 
 
     public static java.lang.ThreadLocal lockStack = new java.lang.ThreadLocal() {
@@ -156,6 +160,7 @@ public class ObserverForActiveTesting extends Observer {
     }
 
     public static void myReadBefore(int iid, Object o, int field) {
+        System.out.println("My dispatcher saw read");
         analysis.readBefore(iid, uniqueId(Thread.currentThread()), id(o, field));
     }
 

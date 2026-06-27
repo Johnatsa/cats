@@ -12,6 +12,7 @@ public class RaceOracle{
 
 
     public static void checkCollision(Long memoryAddress, Integer iid){
+        System.out.println("Oracle checking");
         long currentTime = System.nanoTime();
 
         activeAccesses.putIfAbsent(memoryAddress, new java.util.concurrent.ConcurrentHashMap<Long, Integer>());

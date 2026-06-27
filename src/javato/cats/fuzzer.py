@@ -1,12 +1,21 @@
 import json
 import random
+import os
 import subprocess
+
 
 TAPE = "/tmp/tape.txt"
 FEEDBACK = "/tmp/fuzzer_feedback.txt"
-TARGET = ["java", "-cp", "file.jar", "javato.activetesting.Main"]
-#* Tape is a dictionary: {iid : delay}. iid is the results of the static analysis, delay is the ammount of sleep that the thread will sleep 
-#* initial_list is the result of the static analysis
+
+def build_target(app_main, analysis_class):
+    # The -D flag MUST come before the -cp
+    return [
+        "java", 
+        "-ea",
+        f"-Djavato.activetesting.analysis.class={analysis_class}",
+        "-cp", "src/benchmarks/tmpclasses:src/benchmarks/classes:classes:lib/soot.jar:lib/ant-contrib.jar:lib/asm-3.1.jar:lib/jackson-annotations-2.8.11.jar:lib/jackson-core-2.8.11.jar:lib/jackson-databind-2.8.11.jar:lib/servlet.jar",
+        app_main
+    ]
 
 def mutate_tape(current_tape):
     new_tape = current_tape.copy()
@@ -24,8 +33,12 @@ def mutate_tape(current_tape):
     else:
         #Completely random new delay
         new_tape[target_iid] = random.randint(0,100)
+    return new_tape
 
 def get_distance():
+    if not os.path.exists(FEEDBACK):
+        return float('inf')
+
     with open (FEEDBACK, "r") as f:
         return int(f.read().strip())
 
@@ -34,42 +47,49 @@ def save_tape(tape):
     with open(TAPE, "w") as f:
         json.dump(tape, f)
 
-def run_fuzzer(initial_list):
+
+def run_deadlock_phase(app_main):
+    print(f"Deadlock search for: {app_main}")
+    target = build_target(app_main, "javato.activetesting.DeadlockFuzzerAnalysis")
+    
+    result = subprocess.run(target, capture_output=True, text=True, timeout=10.0)
+    if result.returncode == 4243:
+        print("Deadlock found")
+    elif result.returncode == 4244:
+        print("WaitOnly thread found")
+
+
+
+def run_fuzzer(app_main, initial_list):
+    print(f"Race condition search for: {app_main}")
+    target = build_target(app_main, "javato.activetesting.RaceFuzzerAnalysis")
+
     best_tape = {iid : 0 for iid in initial_list}
     best_distance = float('inf')
 
     execs = 0
     while(execs < 1000):
-        print("Execution " + str(execs))
+        if(execs % 100 ==0):
+            print("Execution " + str(execs))
         execs += 1
         current_tape = mutate_tape(best_tape)
         save_tape(current_tape)
 
         try:
-            result = subprocess.run(TARGET, capture_output=True, text=True, timeout=5.0)
+            #print(f"DEBUG: Running command: {' '.join(target)}")
+            result = subprocess.run(target, capture_output=True, text=True, timeout=5.0)
         except subprocess.TimeoutExpired:
-            #Caused a hang
             continue
+
+        #debug
+        if result.returncode != 0 and result.returncode not in [4242, 4243, 4244]:
+                print(f"Java crashed! Return code: {result.returncode}")
+                print(f"Error output:\n{result.stderr}")
+                break 
+
         if result.returncode == 4242:
             print("Race condition found")
-            #Got a race condition 
-            #Save it somewhere
-            #either break or continue to some depth
-
-        if result.returncode == 4243:
-            print("Deadlock found")
-            #Got a deadlock
-            #Save it somewhere
-            #either break or continue to some depth
-
-        if result.returncode == 4244:
-            print("Wait only thread found")
-            #Got a deadlock
-            #Save it somewhere
-            #either break or continue to some depth
-
-
-
+            
         current_distance = get_distance()
 
         if current_distance < best_distance:
@@ -77,15 +97,17 @@ def run_fuzzer(initial_list):
             best_tape = current_tape
         else:
             pass
-    print("Executions finished, check the /tmp/bugs.txt file")
+    print("Executions finished, check the /src/javato/activetesting/cats/bugs.txt file")
     
     #initial_list = [] #the result of the racerD analysis
     #run_fuzzer(initial_list)
 
 def get_initial_list():
-    deadlock_iids = read_file("graph_iids.txt")  # from GraphAnalysis
-    race_iids = read_file("race_iids.txt")       # from HybridAnalysis
-    return list(set(deadlock_iids + race_iids))  # merge and deduplicate
+    try:
+        with open("race_iids.txt", "r") as f:
+            return list(set([line.strip() for line in f.readlines() if line.strip()]))
+    except FileNotFoundError:
+        return []
 
 def read_file (filename):
     # Read

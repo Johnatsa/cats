@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 public class BugLogger{
 
     public static synchronized void log(String bugType, Integer threadNum, String iids){
-        String filepath = "/tmp/bugs.txt";
+        String filepath = "/src/javato/activetesting/cats/bugs.txt";
         String entry = bugType + " " + threadNum + " " + iids;
         
         try (PrintWriter out = new PrintWriter(new FileWriter(filepath, true))) {

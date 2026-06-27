@@ -3,7 +3,9 @@ package javato.activetesting;
 import javato.activetesting.analysis.CheckerAnalysisImpl;
 import javato.activetesting.common.Parameters;
 
-
+import java.util.HashSet;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.LinkedHashSet;
 import javato.activetesting.activechecker.ActiveChecker;
 
@@ -41,12 +43,23 @@ import javato.activetesting.activechecker.ActiveChecker;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class RaceFuzzerAnalysis extends CheckerAnalysisImpl {
-    private CommutativePair racePair;
-
+    
+    private HashSet<Integer> targetRaceIids = new HashSet<>();
+    
     public void initialize() {
-        if (Parameters.errorId >= 0) {
-            LinkedHashSet<CommutativePair> seenRaces = HybridRaceTracker.getRacesFromFile();
-            racePair = (CommutativePair) (seenRaces.toArray())[Parameters.errorId - 1];
+        System.out.println("race fuzzer init");
+        try{
+            BufferedReader br = new BufferedReader(new FileReader("race_iids.txt"));
+            String line;
+            while((line = br.readLine()) != null){
+                if(!line.trim().isEmpty()){
+                    targetRaceIids.add(Integer.parseInt(line.trim()));
+                }
+                br.close();
+                System.out.println("RaceFuzzer loaded targets: " + targetRaceIids);
+            } 
+        } catch(Exception e){
+            System.out.println("Couldn't read race_iids.txt" + e);
         }
     }
 
@@ -91,16 +104,18 @@ public class RaceFuzzerAnalysis extends CheckerAnalysisImpl {
     }
 
     public void readBefore(Integer iid, Integer thread, Long memory) {
-        if (racePair != null && racePair.contains(iid)) {
+        System.out.println("Read hook triggered");
+        if (targetRaceIids.contains(iid)) {
             ActiveChecker.fuzzDelay(iid);
             RaceOracle.checkCollision(memory, iid);
         }
     }
 
     public void writeBefore(Integer iid, Integer thread, Long memory) {
-        if (racePair != null && racePair.contains(iid)) {
+        System.out.println("Write hook triggered");
+        if (targetRaceIids.contains(iid)) {
             ActiveChecker.fuzzDelay(iid);
-            RaceOracle.checkCollision(memory, iid);    
+            RaceOracle.checkCollision(memory, iid);
         }
     }
 

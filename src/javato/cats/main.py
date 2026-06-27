@@ -12,15 +12,28 @@
 #      -> uses the graph / candidate ids
 #      -> repeatedly runs the instrumented target
 #      -> reports race/deadlock if return code says 4242 / 4243
+import argparse
 
 
-
-from fuzzer import run_fuzzer, get_initial_list
+from fuzzer import run_deadlock_phase, run_fuzzer, get_initial_list
 
 def main():
-    # Step 3: Call the fuzzer directly, assuming Make already did Steps 1 & 2
-    initial_list = get_initial_list()
-    run_fuzzer(initial_list)
+    parser = argparse.ArgumentParser(description="CATS Concurrency Fuzzer")
+    parser.add_argument("--app", required=True, help="Target Java class (passed from Makefile)")
+    parser.add_argument("--deadlock", action="store_true", help="Run Deadlock phase (1 execution)")
+    parser.add_argument("--race", action="store_true", help="Run Race condition phase (mutations)")
+    
+    args = parser.parse_args()
+
+    run_both = not args.deadlock and not args.race
+    
+    if args.deadlock or run_both:
+        run_deadlock_phase(args.app)
+        
+    if args.race or run_both:
+        initial_list = get_initial_list()
+        run_fuzzer(args.app, initial_list)
+
 
 if __name__ == "__main__":
     main()

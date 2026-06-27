@@ -36,6 +36,7 @@ public class TestRace1 {
     public static int x = 0;
 
     public static void main(String[] args) throws InterruptedException {
+        System.out.println("IS OBSERVER LOADED? " + (javato.activetesting.analysis.ObserverForActiveTesting.analysis != null));
         Thread t1 = new Thread() {
             public void run() {
                 x++;

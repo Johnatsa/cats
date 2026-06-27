@@ -38,7 +38,7 @@ public class DeadlockFuzzerAnalysis extends CheckerAnalysisImpl {
 
         
         //!If not from a filepath then we need to figure out where will the graph put its results
-        loadDeadLockTargets("filepath");
+        loadDeadLockTargets("graph_iids.txt");
     }
 
     private void loadDeadLockTargets(String filepath){
