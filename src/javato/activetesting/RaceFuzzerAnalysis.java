@@ -47,7 +47,7 @@ public class RaceFuzzerAnalysis extends CheckerAnalysisImpl {
     private HashSet<Integer> targetRaceIids = new HashSet<>();
     
     public void initialize() {
-        System.out.println("race fuzzer init");
+        System.out.println("yoi");
         try{
             BufferedReader br = new BufferedReader(new FileReader("race_iids.txt"));
             String line;

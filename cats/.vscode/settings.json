@@ -1,0 +1,11 @@
+{
+    "java.errors.incompleteClasspath.severity": "ignore",
+    "java.project.sourcePaths": ["src", "tests"],
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-1.7",
+            "path": "/usr/lib/jvm/zulu7-ca-amd64",
+            "default": true
+        }
+    ]
+}

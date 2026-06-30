@@ -14,7 +14,7 @@ TARGET_LEVEL := 1.7
 
 JAVA7_RT := $(JAVA_HOME)/jre/lib/rt.jar
 JAVA7_JCE := $(JAVA_HOME)/jre/lib/jce.jar
-JAVA_BOOT_ARG := $(if $(wildcard $(JAVA7_RT)),-Dsun.boot.class.path=$(JAVA7_RT):$(JAVA7_JCE),)
+JAVA_BOOT_ARG := $(if $(wildcard $(JAVA7_RT)),-Dfboot.class.path=$(JAVA7_RT):$(JAVA7_JCE),)
 
 empty :=
 space := $(empty) $(empty)
